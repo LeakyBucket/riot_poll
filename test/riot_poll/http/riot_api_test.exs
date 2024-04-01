@@ -47,6 +47,46 @@ defmodule RiotPoll.HTTP.RiotApiTest do
     end
   end
 
+  describe "get_summoner_by_puuid/2" do
+    test "returns {:ok, Summoner.t()} for a valid name and region" do
+      expect(RiotClientBehaviourMock, :get_summoner_by_puuid, fn puuid, _region ->
+        {:ok,
+         %Req.Response{
+           body: %{
+             "accountId" => "randomid",
+             "profileIconId" => 8,
+             "revisionDate" => 386_386_368_368,
+             "name" => "Chuky",
+             "id" => "38385ghd",
+             "puuid" => puuid,
+             "summonerLevel" => 8
+           }
+         }}
+      end)
+
+      assert {:ok, %Summoner{puuid: "83563-35623"}} =
+               RiotApi.get_summoner_by_puuid("83563-35623", "la2")
+    end
+
+    test "returns an error when given an invalid region" do
+      bogus_region = "bogus"
+
+      assert {:error, "Invalid region: #{bogus_region}"} ==
+               RiotApi.get_summoner_by_puuid("Chucky", bogus_region)
+    end
+
+    test "returns an error tuple with response body on HTTP error" do
+      expect(RiotClientBehaviourMock, :get_summoner_by_puuid, fn _name, _region ->
+        {:error,
+         %Req.Response{
+           body: "Not Found"
+         }}
+      end)
+
+      assert {:error, "Not Found"} == RiotApi.get_summoner_by_puuid("Missing", "la2")
+    end
+  end
+
   describe "get_recent_match_ids/2" do
     test "returns {:ok, list(String.t())} for for a valid summoner and region" do
       name = "Chucky"
