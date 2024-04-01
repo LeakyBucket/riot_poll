@@ -16,9 +16,9 @@ defmodule RiotPoll.Worker.Supervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def launch_workers(names, region) do
-    Enum.each(names, fn name ->
-      DynamicSupervisor.start_child(__MODULE__, {Pollster, name: name, region: region})
+  def launch_workers(summoners, region) do
+    Enum.each(summoners, fn summoner ->
+      DynamicSupervisor.start_child(__MODULE__, {Pollster, %{summoner: summoner, region: region}})
     end)
   end
 end

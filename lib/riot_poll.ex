@@ -11,7 +11,7 @@ defmodule RiotPoll do
       {Worker.Supervisor, name: PollsterSupervisor}
     ]
 
-    Supervisor.start_link(children, :one_for_one)
+    Supervisor.start_link(children, strategy: :one_for_one)
   end
 
   @doc """
@@ -24,24 +24,33 @@ defmodule RiotPoll do
     {:ok, summoner} = RiotApi.get_summoner_by_name(summoner_name, region)
     {:ok, match_ids} = RiotApi.get_recent_match_ids(summoner, region)
 
-    others =
-      (match_ids || [])
-      |> Enum.flat_map(fn id ->
-        {:ok, puuids} = RiotApi.get_match_participants(id, region)
+    other_summoners = get_other_summoners(match_ids, summoner, region)
 
-        puuids || []
-      end)
-      |> Enum.reject(&(&1 == summoner.puuid))
+    Worker.Supervisor.launch_workers(other_summoners, region)
 
-    summoners =
-      Enum.map(others, fn other ->
-        {:ok, summoner} = RiotApi.get_summoner_by_puuid(other, region)
-        summoner
-      end)
+    Enum.map(other_summoners, & &1.name)
+  end
 
-    # TODO: Start polling
+  # Fetch "other" summoners from the given match ids.  This function will filter
+  # out the given summoner from the list.
+  defp get_other_summoners([], _summoner, _region) do
+    []
+  end
 
-    Enum.map(summoners, & &1.name)
+  defp get_other_summoners(match_ids, summoner, region) do
+    match_ids
+    |> Enum.flat_map(fn id ->
+      {:ok, puuids} = RiotApi.get_match_participants(id, region)
+
+      puuids || []
+    end)
+    |> MapSet.new()
+    |> MapSet.to_list()
+    |> Enum.reject(&(&1 == summoner.puuid))
+    |> Enum.map(fn other ->
+      {:ok, summoner} = RiotApi.get_summoner_by_puuid(other, region)
+      summoner
+    end)
   end
 
   defp ensure_env do
