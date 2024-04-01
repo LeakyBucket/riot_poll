@@ -8,9 +8,9 @@ defmodule RiotPoll.HTTP.RiotApiTest do
 
   setup :verify_on_exit!
 
-  describe "get_summoner/2" do
+  describe "get_summoner_by_name/2" do
     test "returns {:ok, Summoner.t()} for a valid name and region" do
-      expect(RiotClientBehaviourMock, :get_summoner, fn name, _region ->
+      expect(RiotClientBehaviourMock, :get_summoner_by_name, fn name, _region ->
         {:ok,
          %Req.Response{
            body: %{
@@ -25,25 +25,25 @@ defmodule RiotPoll.HTTP.RiotApiTest do
          }}
       end)
 
-      assert {:ok, %Summoner{name: "Chucky"}} = RiotApi.get_summoner("Chucky", "la2")
+      assert {:ok, %Summoner{name: "Chucky"}} = RiotApi.get_summoner_by_name("Chucky", "la2")
     end
 
     test "returns an error when given an invalid region" do
       bogus_region = "bogus"
 
       assert {:error, "Invalid region: #{bogus_region}"} ==
-               RiotApi.get_summoner("Chucky", bogus_region)
+               RiotApi.get_summoner_by_name("Chucky", bogus_region)
     end
 
     test "returns an error tuple with response body on HTTP error" do
-      expect(RiotClientBehaviourMock, :get_summoner, fn _name, _region ->
+      expect(RiotClientBehaviourMock, :get_summoner_by_name, fn _name, _region ->
         {:error,
          %Req.Response{
            body: "Not Found"
          }}
       end)
 
-      assert {:error, "Not Found"} == RiotApi.get_summoner("Missing", "la2")
+      assert {:error, "Not Found"} == RiotApi.get_summoner_by_name("Missing", "la2")
     end
   end
 

@@ -7,6 +7,7 @@ defmodule RiotPoll.Worker.Pollster do
   use GenServer
 
   alias RiotPoll.HTTP.RiotApi
+  alias RiotPoll.Worker
 
   require Logger
 
@@ -35,7 +36,7 @@ defmodule RiotPoll.Worker.Pollster do
 
     case remaining_iterations do
       0 ->
-        {:stop, state}
+        {:stop, :normal, state}
 
       _ ->
         Process.send_after(self(), :poll, interval() * 1000)
