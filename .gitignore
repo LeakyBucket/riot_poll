@@ -24,3 +24,6 @@ riot_poll-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# dotenv
+.envrc
