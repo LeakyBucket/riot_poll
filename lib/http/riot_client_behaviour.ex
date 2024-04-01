@@ -9,7 +9,13 @@ defmodule RiotPoll.HTTP.RiotClientBehaviour do
   @doc """
   Callback definition for fetching a summoner by name and region
   """
-  @callback get_summoner(name :: String.t(), region :: String.t()) ::
+  @callback get_summoner_by_name(name :: String.t(), region :: String.t()) ::
+              {:error, String.t()} | {:ok, Summoner.t()}
+
+  @doc """
+  Callback definition for fetching a summoner by puuid and region
+  """
+  @callback get_summoner_by_puuid(puuid :: String.t(), region :: String.t()) ::
               {:error, String.t()} | {:ok, Summoner.t()}
 
   @doc """

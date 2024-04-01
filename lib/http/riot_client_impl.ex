@@ -10,11 +10,19 @@ defmodule RiotPoll.HTTP.RiotClientImpl do
 
   @match_by_id "lol/match/v5/matches"
   @recent_match_ids "lol/match/v5/matches/by-puuid"
+  @summoner_by_puuid "lol/summoner/v4/summoners/by-puuid"
   @summoner_by_name "lol/summoner/v4/summoners/by-name"
 
   @impl true
-  def get_summoner(name, region) do
+  def get_summoner_by_name(name, region) do
     url = "https://#{region}.api.riotgames.com/#{@summoner_by_name}/#{name}"
+
+    Req.get(base_req(), url: url)
+  end
+
+  @impl true
+  def get_summoner_by_puuid(puuid, region) do
+    url = "https://#{region}.api.riotgames.com/#{@summoner_by_puuid}/#{puuid}"
 
     Req.get(base_req(), url: url)
   end

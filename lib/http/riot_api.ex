@@ -10,11 +10,28 @@ defmodule RiotPoll.HTTP.RiotApi do
   Retrieve a specific summoner given their name and a valid region. This function returns
   a tagged result tuple either containing an error message or a `Summoner.t()` struct.
   """
-  @spec get_summoner(name :: String.t(), region :: String.t()) ::
+  @spec get_summoner_by_name(name :: String.t(), region :: String.t()) ::
           {:error, String.t()} | {:ok, Summoner.t()}
-  def get_summoner(name, region) do
+  def get_summoner_by_name(name, region) do
     if Regions.valid?(region) do
-      case impl().get_summoner(name, region) do
+      case impl().get_summoner_by_name(name, region) do
+        {:ok, response} -> {:ok, Summoner.from_riot(response.body)}
+        {:error, response} -> {:error, response.body}
+      end
+    else
+      {:error, "Invalid region: #{region}"}
+    end
+  end
+
+  @doc """
+  Retrieve a specific summoner given their name and a valid region. This function returns
+  a tagged result tuple either containing an error message or a `Summoner.t()` struct.
+  """
+  @spec get_summoner_by_puuid(puuid :: String.t(), region :: String.t()) ::
+          {:error, String.t()} | {:ok, String.t()}
+  def get_summoner_by_puuid(puuid, region) do
+    if Regions.valid?(region) do
+      case impl().get_summoner_by_puuid(puuid, region) do
         {:ok, response} -> {:ok, Summoner.from_riot(response.body)}
         {:error, response} -> {:error, response.body}
       end
